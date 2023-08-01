@@ -1,0 +1,19 @@
+{
+  "Version": 1,
+  "Hash": "4N9h7tNsGmzrxFMSOl+LfFpm1qqIt4XW0RU+5oAob1o=",
+  "Source": "AgendaAPI",
+  "BasePath": "_content/AgendaAPI",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "AgendaAPI\\wwwroot",
+      "Source": "AgendaAPI",
+      "ContentRoot": "C:\\Users\\André\\Desktop\\workspace\\AgendaAPI\\wwwroot\\",
+      "BasePath": "_content/AgendaAPI",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": []
+}
