@@ -1,6 +1,5 @@
 ﻿using AgendaAPI.Services.Interfaces;
 using AgendaAPI.ViewModels;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AgendaAPI.Controllers
@@ -8,63 +7,51 @@ namespace AgendaAPI.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
-    {
-        private readonly SignInManager<IdentityUser> _signInManager; 
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly ITokenService _tokenService;
+    {       
+        private readonly IAuthService _authService;
 
-        public AuthController(SignInManager<IdentityUser> singInManager, 
-                                UserManager<IdentityUser> userManager,
-                                ITokenService tokenService)
-        {
-            _signInManager = singInManager;
-            _userManager = userManager;
-            _tokenService = tokenService;
+        public AuthController(IAuthService authService)
+        {                        
+            _authService = authService;
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<IdentityUser>> Registrar(RegisterUserViewModel registerUser)
+        public async Task<ActionResult> Register(RegisterUserViewModel registerUser)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.Values.SelectMany(e => e.Errors));
 
-            var user = new IdentityUser
+            try
+            {               
+                var result = await _authService.Register(registerUser);
+
+                if (!result.Succeeded)
+                    return BadRequest(result.Errors);
+            }
+            catch (Exception ex)
             {
-                UserName = registerUser.Email,
-                Email = registerUser.Email,
-                EmailConfirmed = true
-            };
+                return BadRequest(ex.Message);
+            }            
 
-            var result = await _userManager.CreateAsync(user, registerUser.Password);
-
-            if (!result.Succeeded)
-                return BadRequest(result.Errors);
-
-            return Ok(user);
+            return Ok("Success");
         }
 
-        [HttpPost("entrar")]
+        [HttpPost("login")]
         public async Task<ActionResult<string>> Login(LoginUserViewModel loginUser)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState.Values.SelectMany(e => e.Errors));
-                      
-            var result = await _signInManager.PasswordSignInAsync(loginUser.Email, loginUser.Password, false, true);
+                return BadRequest(ModelState.Values.SelectMany(e => e.Errors));         
 
-            if (result.Succeeded)
+            try
             {
-                string token = _tokenService.CreateJwtToken(loginUser.Email);
+                var token = await _authService.Login(loginUser);
                 return Ok(token);
             }
-
-            return BadRequest("Invalid Username or Password!");
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }     
-
-        [HttpPost("sair")]
-        public async Task<ActionResult> LogOff()
-        {
-            await _signInManager.SignOutAsync();
-            return Ok();
-        }
+       
     }
 }

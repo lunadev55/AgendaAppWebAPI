@@ -1,5 +1,4 @@
 ﻿using AgendaAPI.Models;
-using Microsoft.AspNetCore.Mvc;
 
 namespace AgendaAPI.Repositories.Interfaces
 {
@@ -7,9 +6,8 @@ namespace AgendaAPI.Repositories.Interfaces
     {
         Task<List<Agenda>> GetAgenda();
         Task<Agenda> GetById(Guid Id);
-        public string Create(string newName, string newEmail, string newPhonenumber);
-        public string Update(Guid id, string newName, string newEmail, string newPhonenumber);
-        public string Delete(Guid id);
-
+        Task<Agenda> Create(string newName, string newEmail, string newPhonenumber);        
+        Task<Agenda> Update(Guid id, string newName, string newEmail, string newPhonenumber);
+        Task<string> Delete(Guid id);
     }
 }

@@ -22,4 +22,6 @@ public class Agenda
     [Required]
     public string Phonenumber { get; set; } = string.Empty;
 
+    [NotMapped]
+    public string Message { get; set; } = string.Empty;
 }

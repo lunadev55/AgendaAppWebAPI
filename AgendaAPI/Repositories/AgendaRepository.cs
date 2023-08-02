@@ -6,13 +6,15 @@ namespace AgendaAPI.Repositories
 {
     public class AgendaRepository : IAgendaRepository
     {
-        public string Create(string newName, string newEmail, string newPhonenumber)
+        public async Task<Agenda> Create(string newName, string newEmail, string newPhonenumber)
         {
+            var agenda = new Agenda();
+
             try
             {
-                using (var db = new AgendaDbContext())
+                await using (var db = new AgendaDbContext())
                 {
-                    var agenda = new Agenda
+                    agenda = new Agenda
                     {
                         Name = newName,
                         Email = newEmail,
@@ -22,67 +24,87 @@ namespace AgendaAPI.Repositories
                     db.Agendas.Add(agenda);
                     db.SaveChanges();
                 }
+
+                agenda.Message = "Added Successfully!";
             }
             catch (Exception ex)
             {
-                return ex.Message;
+                agenda = new Agenda();
+                agenda.Message = ex.Message;
             }
 
-            return "Added Successfully!";
+            return agenda;
         }
 
-        public string Delete(Guid id)
+        public async Task<string> Delete(Guid id)
         {          
+            string message = string.Empty;
             try
             {
-                using (var db = new AgendaDbContext())
+                await using (var db = new AgendaDbContext())
                 {
                     var agenda = new Agenda() { Id = id };
 
                     db.Agendas.Attach(agenda);
                     db.Agendas.Remove(agenda);
                     db.SaveChanges();
+
+                    message = "Deleted";
                 }
             }
             catch (Exception ex)
             {
-                return ex.Message;
+                throw new Exception(ex.Message);
             }
 
-            return "Deleted Successfully!";
+            return message;
         }
 
         public async Task<List<Agenda>> GetAgenda()
         {
-            var agenda = new List<Agenda>();   
-
-            await using (var db = new AgendaDbContext())
+            try
             {
-                agenda = db.Agendas.ToList();
-            }          
+                var agenda = new List<Agenda>();
 
-            return agenda;
+                await using (var db = new AgendaDbContext())
+                {
+                    agenda = db.Agendas.ToList();
+                }
+                return agenda;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }         
         }
 
         public async Task<Agenda> GetById(Guid id)
         {
             var contact = new Agenda();
-
-            await using (var db = new AgendaDbContext())
-            {
-                contact = db.Agendas.FindAsync(id).Result;
-            }
-
-            return contact;
-        }
-
-        public string Update(Guid id, string newName, string newEmail, string newPhonenumber)
-        {     
             try
             {
-                using (var db = new AgendaDbContext())
+                await using (var db = new AgendaDbContext())
+                {
+                    contact = db.Agendas.FindAsync(id).Result;
+                }
+
+                return contact;
+            }
+            catch (Exception ex)
+            {                
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<Agenda> Update(Guid id, string newName, string newEmail, string newPhonenumber)
+        {
+            var agenda = new Agenda();
+            try
+            {
+                await using (var db = new AgendaDbContext())
                 {
                     var contact = db.Agendas.SingleOrDefault(c => c.Id == id);
+
                     if (contact is not null)
                     {
                         contact.Name = newName;
@@ -92,14 +114,18 @@ namespace AgendaAPI.Repositories
                         db.Agendas.Update(contact);
                         db.SaveChanges();
                     }
+
+                    agenda = contact;
+                    agenda.Message = "Updated Successfully!";
                 }
             } 
             catch (Exception ex)
             {
-                return ex.Message;
+                agenda = new Agenda();
+                agenda.Message = ex.Message;
             }
 
-            return "Updated Successfully!";
+            return agenda;
         }
     }
 }

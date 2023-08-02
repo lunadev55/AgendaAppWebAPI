@@ -1,4 +1,4 @@
-﻿using AgendaAPI.Repositories.Interfaces;
+﻿using AgendaAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,50 +9,86 @@ namespace AgendaAPI.Controllers
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class AgendaController : ControllerBase
     {
-        private readonly IAgendaRepository _agendaRepository;
+        private readonly IAgendaService _agendaService;
 
-        public AgendaController(IAgendaRepository agendaRepository)
-        {
-            _agendaRepository = agendaRepository;
+        public AgendaController(IAgendaService agendaService)
+        {            
+            _agendaService = agendaService;
         }
         
         [HttpGet(Name = "GetAgenda")]
         public async Task<IActionResult> GetAgenda()
         {   
-            var result = await _agendaRepository.GetAgenda();
-            return Ok(result);
+            try
+            {
+                var result = await _agendaService.GetAll();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }            
         }
 
         [HttpGet]
         [Route("GetContactById")]
         public async Task<IActionResult> GetContactById([FromQuery] Guid id)
         {                     
-            var result = await _agendaRepository.GetById(id);
-            return Ok(result);
+            try
+            {
+                var result = await _agendaService.GetById(id);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            
         }
 
         [HttpPost]
         [Route("AddContact")]
-        public JsonResult AddContact([FromForm] string newName, [FromForm] string newEmail, [FromForm] string newPhonenumber)
-        {           
-            var contactId = _agendaRepository.Create(newName, newEmail, newPhonenumber); 
-            return new JsonResult("Added Successfully!");
+        public async Task<IActionResult> AddContact([FromForm] string newName, [FromForm] string newEmail, [FromForm] string newPhonenumber)
+        {    
+            try
+            {
+                var contact = await _agendaService.Create(newName, newEmail, newPhonenumber);
+                return Ok(contact);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }        
         }
 
         [HttpPost]
         [Route("UpdateContact")]
-        public JsonResult UpdateContact([FromQuery] Guid id, [FromForm] string newName, [FromForm] string newEmail, [FromForm] string newPhonenumber)
-        {        
-            var result = _agendaRepository.Update(id, newName, newEmail, newPhonenumber);
-            return new JsonResult(result);
+        public async Task<IActionResult> UpdateContact([FromQuery] Guid id, [FromForm] string newName, [FromForm] string newEmail, [FromForm] string newPhonenumber)
+        { 
+            try
+            {
+                var result = await _agendaService.Update(id, newName, newEmail, newPhonenumber);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }                    
         }
 
         [HttpDelete]
         [Route("Delete")]
-        public JsonResult DeleteContact([FromQuery] Guid id)
-        {          
-            var result = _agendaRepository.Delete(id);
-            return new JsonResult(result);
+        public async Task<IActionResult> DeleteContact([FromQuery] Guid id)
+        {   
+            try
+            {
+                var result = await _agendaService.Delete(id);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }
